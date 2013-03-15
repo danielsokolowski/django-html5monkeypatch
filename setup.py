@@ -1,4 +1,4 @@
-raise NotImplementedError('Early development stage, please install by cloning the repository and placing it on the Python path instead of pip, or setuptools.')
+raise NotImplementedError('Early development stage, instead of pip or setuptools please install by cloning the repository and placing it on the Python path.')
 
 # from setuptools import setup, find_packages
 #  

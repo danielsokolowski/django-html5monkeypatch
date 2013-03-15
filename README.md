@@ -1,13 +1,13 @@
 ###HTML5 monkey patched support for django.
 
-Monkeys are *not* evil! Think of monkeypatching as advanced default settings for your Django project. Based on that
-assumption this App should be considered an experiment and proof of concept; it provides HTML5 django
-support by default and without having to update your existing code.
+Monkeys are *not* evil! Think of monkeypatching as a way to do advanced settings for your Django project. Based on that
+assumption this App is an experiment and proof of concept. It provides HTML5 django support by default and without 
+having to update your existing code, for example you might have did this in the past:
 
 	Before:
 	
 		class HTML5DateTimeInput(django.forms.widgets.DateTimeInput):
-		    """Subclass TextInput since there's no direct way to override its type attribute"""
+		    """Subclass TextInput since there's no direct way to override its 'type' attribute"""
 		    if settings.USE_TZ:
 				input_type = 'datetime'
 			else:
@@ -23,38 +23,27 @@ support by default and without having to update your existing code.
 	
 	After:
 	
-		# No subclassing of ModelForm needed
-		
+		class MyModelForm(ModelForm):
+		    class Meta:
+		        model = MyModel
+
 That's right: by including this app in your settings all your current DateTimeFields (native or aware) on your Forms or 
 Model forms will render now as html5 &lt;input type="datetime" ...&gt;' or '&lt;inpyt type="datetime-local" ... &gt;' widgets. 
 
 ##Features
 
-- automatic django built in form field mapping to corresponding HTML5 input types (widgets)
+1. automatic django built in form field mapping to corresponding HTML5 input types (widgets):
 	* 'django.forms.fields.EmailField' maps to '&lt;input type="email" ...&gt;'
 	* 'django.forms.fields.URLField' maps to '&lt;input type="url" ...&gt;'
 	* 'django.forms.fields.IntegerField' maps to '&lt;input type="number" min="&lt;field.min_value&gt;" max="&lt;field.max_value&gt;" ...&gt;
 	* 'django.forms.fields.DecimalField' maps to '&lt;input type="number" min="&lt;field.min_value&gt;" max="&lt;field.max_value&gt;"
 	   step="&lt;field.decimal_places converted to step value or 0.1 if None&gt;
-- HTML5 form, model form, and widget input support for:
-	* color
-	* date
-	* datetime
-	* datetime-local
-	* email
-	* month
-	* number
-	* range
-	* search
-	* tel
-	* time
-	* url
-	* week
-- HTML5 *automatic mapping* attribute support for followinng:
+2. HTML5 form, model form, and widget input support for:
+	* color, date, datetime, datetime-local, email, month, number, range, search, tel, time, url, week
+3. HTML5 *automatic mapping* attribute support for followinng:
 	- New attributes for &lt;form&gt;:
-		TODO: autocomplete
-		TODO: novalidate
-		
+		* TODO: autocomplete
+		* TODO: novalidate
 	- New attributes for &lt;input&gt;:
 		* placeholder
 		* required  - maps from all form fields from Field.required
@@ -71,16 +60,15 @@ Model forms will render now as html5 &lt;input type="datetime" ...&gt;' or '&lt;
 		* TODO: height and width
 		* TODO: list
 		* TODO: multiple
-		vTODO: pattern (regexp)
-				
-- no JS fallback pollution - let the browser support handle it or you may sprinkle JS yourself (might change this)
-- help_text is no longer rendered outside of input tag (patched BaseForm._html_output)
-- help_text is mapped onto placeholder input attribute: '&lt;input type="text" placeholder="&lt;help_text" ...&gt;'
+		* TODO: pattern (regexp)
+4. no JS fallback pollution - let the browser support handle it or you may sprinkle JS yourself (might change this)
+5. help_text is no longer rendered outside of input tag (patched BaseForm._html_output)
+6. help_text is mapped onto placeholder input attribute: '&lt;input type="text" placeholder="&lt;help_text" ...&gt;'
 
 ## Installation
 
 You are encouraged to hack this into your project rather then use it as a stand alone app - in my experience
-projects end up saner that way. 
+it's cleaner to hack code directly rather then sublcass. 
 
 	git clone --origin danielsokolowski git://github.com/danielsokolowski/django-html5monkeypatch.git
 
@@ -98,10 +86,46 @@ Django start initialization:
 	'django.contrib.admin',
 	'django.contrib.gis',
 
-	# Stand alone APPS - see any specific settings at bottom of settings.py file
+	# Stand alone APPS - see any app specific settings at bottom of this settings.py file
 	'html5monkeypatch', 
 	)
 	
-##Credits
+## Well behaved Monkeypatch Example
 
-Inspired by github: rhec  / django-html5 but completely different. 
+IMHO below is an example of a well behaved patch, verbose and obvious is good, this evolved over a few iterations and 
+your comments are welcomed on this approach:
+
+	import hashlib
+	import logging
+	import inspect
+	logger = logging.getLogger(__name__)
+	
+	# be nice and tell you are patching
+	logger.info("Patching 'Field.widget_attrs = widget_attrs_monkeypatched': Adds new html5 input attributes support by "
+	            " automatically mapping from the Field instance")
+	
+	# be nicer and confirm signature of code we are patching and warn if it has changed
+	# raise Exception(hashlib.md5(inspect.getsource(Field.widget_attrs)).hexdigest()) # uncommet to find latest hash
+	if not 'fdd8b32e3c5d782f7af69b29bf1b933b' == \
+	        hashlib.md5(inspect.getsource(Field.widget_attrs)).hexdigest():
+	    logger.warn("md5 signature of 'Field.widget_attrs' does not match Django 1.5. There is a slight chance patch "
+	                    "might be broken so please compare and update this monkeypatch.")
+	
+	Field.widget_attrs_premonkeypatch = Field.widget_attrs 
+	def widget_attrs_monkeypatched(self, widget):
+	    """
+	    MONKEYPATCHED: Adds new html5 input attributes support by automatically mapping from the Field instance:
+	    """
+	    ...
+	    < do patchy things > ...
+	    ...    
+	    return attrs
+	widget_attrs_monkeypatched.__doc__ += Field.widget_attrs.__doc__  # be still super nice and update the docstring
+	
+	# do the actual patch
+	Field.widget_attrs = widget_attrs_monkeypatched
+	del widget_attrs_monkeypatched  # clean up namespace
+
+## Credits
+
+Inspired by github: rhec / django-html5 but completely different. 
