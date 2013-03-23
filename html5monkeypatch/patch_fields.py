@@ -1,6 +1,7 @@
 """ This file is autoimported and patches in at run time htmlt5 support for Django """
-from django.forms.fields import EmailField, URLField, Field, IntegerField, DecimalField
+from django.forms.fields import EmailField, URLField, Field, IntegerField, DecimalField, SplitDateTimeField, TimeField
 from html5monkeypatch.html5_wigets import EmailInput, URLInput, NumberInput
+from django.forms.widgets import DateInput , DateTimeInput, TimeInput
 import hashlib
 import logging
 import inspect
@@ -41,6 +42,8 @@ def widget_attrs_monkeypatched(self, widget):
 	if hasattr(self, 'decimal_places'):
 		# covert decimal places to input step attribute if if decimal_places not specified default to step 0.1
 		attrs['step'] = 1 * 10 ** (-1 * (self.decimal_places or 1))
+	if isinstance(self, SplitDateTimeField) or isinstance(self, TimeField):
+		attrs['step'] = 1
 	# FIXME: this does not work?! if hasattr(self, 'regex'):
 		
 		# attrs['pattern'] = self.regex 
