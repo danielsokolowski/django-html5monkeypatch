@@ -2,6 +2,7 @@
 This file is autoimported and patches at run time htmlt5 support for Django
 """
 from django.forms.forms import BaseForm
+from django.forms.widgets import Input, Textarea
 from django.utils.html import conditional_escape, format_html
 from django.utils.encoding import force_text
 from django.utils import six
@@ -55,13 +56,17 @@ def baseform__html_output_patched(self, normal_row, error_row, row_ender, help_t
 			else:
 				label = ''
 				
-			# we comment out the help_text rendering
-			#if field.help_text:
-			#	help_text = help_text_html % force_text(field.help_text)
-			#else:
-			#	help_text = ''
-			help_text =''
-
+			# we try to follow per http://www.wufoo.com/html5/attributes/01-placeholder.html specs and disable
+			# htelp text for some elements as in our patch_widgets we make help_text = placeholder
+			if field.help_text and not isinstance(field.widget, Input) and not isinstance(field.widget, Textarea):
+				help_text = help_text_html % force_text(field.help_text)
+			else:
+				# some certain Input types should still have help_text rather than not
+				if hasattr(field.widget, 'input_type') and field.widget.input_type in ['file']:
+					help_text = help_text_html % force_text(field.help_text)
+				else:
+					help_text = ''
+			
 			output.append(normal_row % {
 				'errors': force_text(bf_errors),
 				'label': force_text(label),

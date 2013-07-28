@@ -63,7 +63,8 @@ Model forms will render now as html5 &lt;input type="datetime" ...&gt;' or '&lt;
 		* TODO: pattern (regexp)
 4. no JS fallback pollution - let the browser support handle it or you may sprinkle JS yourself (might change this)
 5. help_text is no longer rendered outside of input tag (patched BaseForm._html_output)
-6. help_text is mapped onto placeholder input attribute: '&lt;input type="text" placeholder="&lt;help_text" ...&gt;'
+6. help_text is mapped onto placeholder input attribute: '&lt;input type="text" placeholder="&lt;help_text" ...&gt;' but 
+   only for elements that it make sense to do so otherwise help_text is rendered with the field as in original.  
 
 ## Installation
 
