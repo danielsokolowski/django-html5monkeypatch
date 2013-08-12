@@ -33,8 +33,7 @@ def widget_attrs_monkeypatched(self, widget):
 	attrs = self.widget_attrs_premonkeypatch(widget)
 	if self.required == True:
 		attrs["required"] = "required"
-	if self.help_text is not "": #FIXME: do this only for items per specs - 
-								 #ee path_forms.py and http://www.wufoo.com/html5/attributes/01-placeholder.html
+	if self.help_text: 	#FIXME: do this only for items per specs http://www.wufoo.com/html5/attributes/01-placeholder.html
 		attrs["placeholder"] = self.help_text
 	if hasattr(self, 'min_value'):
 		attrs["min"] = self.min_value
